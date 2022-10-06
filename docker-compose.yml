@@ -1,0 +1,13 @@
+version: "3.2"
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8080"
+    volumes:
+      - ./polititweet:/usr/src/polititweet
+    command: >
+      sh -c "./launch.sh"
+    env_file:
+      - ./polititweet/polititweet/.env
