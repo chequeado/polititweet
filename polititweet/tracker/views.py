@@ -39,7 +39,7 @@ def index(request):
     tweets = Tweet.objects.order_by("-tweet_id")
     deletors = User.objects.order_by("-deleted_count")
     total_figures = deletors.count()
-    last_archived = tweets[0].modified_date
+    last_archived = tweets[0].modified_date if tweets.exists() else None
     total_deleted = deleted.count()
     most_recently_deleted = Tweet.get_current_top_deleted_tweet(since=30)
     context = {
