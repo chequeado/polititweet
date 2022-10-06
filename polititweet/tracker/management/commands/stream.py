@@ -28,17 +28,22 @@ class Command(BaseCommand):
             settings.TWITTER_CREDENTIALS["access_secret"],
         )
         api = tweepy.API(auth)
-        following = api.friends_ids()
+        following = api.get_friend_ids()
         following.append(945391013828313088)
         self.stdout.write("Connected to Twitter.")
 
         self.stdout.write(self.style.SUCCESS("Launching stream...!"))
-        stream = tweepy.Stream(auth=auth, listener=ArchiveStreamListener())
+        stream = ArchiveStreamListener(
+            consumer_key=settings.TWITTER_CREDENTIALS["consumer_key"],
+            consumer_secret=settings.TWITTER_CREDENTIALS["consumer_secret"],
+            access_token=settings.TWITTER_CREDENTIALS["access_token"],
+            access_token_secret=settings.TWITTER_CREDENTIALS["access_secret"]
+        )
         stream.filter(follow=[str(id) for id in following])
         self.stdout.write("Exited!")
 
 
-class ArchiveStreamListener(tweepy.StreamListener):
+class ArchiveStreamListener(tweepy.Stream):
     def on_status(self, status):
         if status.user.id not in following:
             return

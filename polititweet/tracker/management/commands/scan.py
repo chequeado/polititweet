@@ -29,9 +29,10 @@ class Command(BaseCommand):
                 settings.TWITTER_CREDENTIALS["access_secret"],
             )
             api = tweepy.API(
-                auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True
+                auth,
+                wait_on_rate_limit=True
             )
-            following = api.friends_ids()
+            following = api.get_friend_ids()
             self.stdout.write("Connected to Twitter.")
 
             self.stdout.write("Starting update on %s users..." % str(len(following)))
@@ -64,8 +65,8 @@ class Command(BaseCommand):
                 try:
                     user_data = None
                     try:
-                        user_data = api.get_user(id)
-                    except tweepy.error.TweepError as e:
+                        user_data = api.get_user(user_id=id)
+                    except tweepy.TweepyException as e:
                         self.stderr.write(str(e))
                         continue  # important to continue, and to _not_ mark all tweets as deleted
                     try:
