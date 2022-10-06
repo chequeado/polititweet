@@ -99,7 +99,7 @@ if DEBUG:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": "database",
+            "NAME": "/usr/src/polititweet/sqlite3.db",
         }
     }
 else:
