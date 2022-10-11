@@ -13,8 +13,13 @@ COPY polititweet .
 
 RUN SECRET_KEY=secretsecretsecret python manage.py collectstatic
 
-RUN chown -R root:root /usr/src/polititweet
+RUN adduser \
+    --disabled-password \
+    --no-create-home \
+    chequeado
 
 EXPOSE 8080
+
+USER chequeado
 
 CMD [ "./launch.sh" ]
