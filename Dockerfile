@@ -20,6 +20,8 @@ RUN adduser \
 
 EXPOSE 8080
 
+RUN chmod -R 775 sqlite3.db
+
 USER chequeado
 
 CMD [ "./launch.sh" ]
