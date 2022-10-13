@@ -57,6 +57,8 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django.contrib.postgres",
     "debug_toolbar",
+    "rest_framework",
+    "api",
 ]
 
 MIDDLEWARE = [

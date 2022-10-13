@@ -19,6 +19,7 @@ from django.conf import settings
 
 urlpatterns = [
     path("", include("tracker.urls")),
+    path("api/", include("api.urls")),
 ]
 
 if settings.DEBUG:
