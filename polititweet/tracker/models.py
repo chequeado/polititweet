@@ -1,4 +1,5 @@
 from datetime import datetime
+import pytz
 from django.contrib.postgres.search import SearchVector, SearchVectorField
 from django.contrib.postgres.indexes import GinIndex
 from django.db import models
@@ -140,9 +141,11 @@ class Tweet(models.Model):
         return "retweeted_status" in self.full_data
 
     def datetime(self):
-        return datetime.strptime(
+        bsas_tzinfo = pytz.timezone("America/Argentina/Buenos_Aires")
+        created_at_datetime = datetime.strptime(
             self.full_data["created_at"], "%a %b %d %H:%M:%S %z %Y"
         )
+        return created_at_datetime.astimezone(bsas_tzinfo)
 
     def day(self):
         return self.datetime().date()

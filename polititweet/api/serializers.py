@@ -18,7 +18,7 @@ class DeletedTweetSerializer(serializers.ModelSerializer):
         depth = 1
 
     def get_created_at(self, obj):
-        return obj.full_data['created_at']
+        return str(obj.datetime())
     
     def get_tweet_id(self, obj):
         return obj.full_data['id_str']
