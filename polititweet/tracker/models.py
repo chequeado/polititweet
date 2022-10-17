@@ -106,7 +106,8 @@ class Tweet(models.Model):
             return self.full_data["text"]
 
     @property
-    def deleted_time_humanized(self):
+    def deleted_after_time_humanized(self):
+        _t = humanize.i18n.activate("es_ES")
         return humanize.naturaldelta(self.deleted_time - self.datetime())
 
     @property
