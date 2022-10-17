@@ -7,6 +7,7 @@ class DeletedTweetSerializer(serializers.ModelSerializer):
     '''Serializer for deleted tweets.'''
     likely_typo = serializers.ReadOnlyField()
     is_retweet = serializers.ReadOnlyField()
+    deleted_after_time_humanized = serializers.ReadOnlyField()
     created_at = serializers.SerializerMethodField()
     retweet_link = serializers.SerializerMethodField()
     tweet_id = serializers.SerializerMethodField()

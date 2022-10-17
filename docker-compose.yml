@@ -3,6 +3,8 @@ version: "3.2"
 services:
   app:
     build: .
+    image: polititweet
+    #restart: always elegir bien para produccion
     ports:
       - "8000:8080"
     volumes:
@@ -11,3 +13,25 @@ services:
       sh -c "./launch.sh"
     env_file:
       - ./polititweet/polititweet/.env
+    depends_on:
+      - db
+  stream:
+    image: polititweet
+    volumes:
+      - ./polititweet:/usr/src/polititweet
+    command: >
+      sh -c "python manage.py stream"
+    env_file:
+      - ./polititweet/polititweet/.env
+    depends_on:
+      - db
+  db:
+    image: postgres:13-alpine
+    #restart: always
+    volumes:
+      - polititweet_db:/var/lib/postgresql/data
+    env_file:
+      - ./polititweet/polititweet/.env
+
+volumes:
+  polititweet_db:

@@ -20,7 +20,8 @@ RUN adduser \
 
 EXPOSE 8080
 
-RUN chmod -R 775 sqlite3.db
+#RUN chown chequeado:chequeado sqlite3.db
+#RUN chmod 775 sqlite3.db
 
 USER chequeado
 
