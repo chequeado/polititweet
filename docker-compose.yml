@@ -5,10 +5,9 @@ services:
     build: .
     image: polititweet
     #restart: always elegir bien para produccion
-    ports:
-      - "8000:8080"
     volumes:
       - ./polititweet:/usr/src/polititweet
+      - static_vol:/usr/src/polititweet/static
     command: >
       sh -c "./launch.sh"
     env_file:
@@ -29,9 +28,19 @@ services:
     image: postgres:13-alpine
     #restart: always
     volumes:
-      - polititweet_db:/var/lib/postgresql/data
+      - db_vol:/var/lib/postgresql/data
     env_file:
       - ./polititweet/polititweet/.env
+  nginx:
+    image: nginx:1.13
+    ports:
+      - 80:80
+    volumes:
+      - ./config/nginx/conf.d:/etc/nginx/conf.d
+      - static_vol:/usr/src/polititweet/static
+    depends_on:
+      - app
 
 volumes:
-  polititweet_db:
+  db_vol:
+  static_vol:
