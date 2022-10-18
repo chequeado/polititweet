@@ -4,7 +4,10 @@ import random
 from django.core.management.base import BaseCommand, CommandError
 from ...models import Tweet, User
 from django.conf import settings
+import logging
 
+
+logger = logging.getLogger('django')
 
 class Command(BaseCommand):
     help = "Update database entries of all followed users"
@@ -20,6 +23,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         def scan():
             self.stdout.write("Connecting to Twitter...")
+            logger.info("Connecting to Twitter...")
             auth = tweepy.OAuthHandler(
                 settings.TWITTER_CREDENTIALS["consumer_key"],
                 settings.TWITTER_CREDENTIALS["consumer_secret"],
@@ -34,8 +38,10 @@ class Command(BaseCommand):
             )
             following = api.get_friend_ids()
             self.stdout.write("Connected to Twitter.")
+            logger.info("Connected to Twitter.")
 
             self.stdout.write("Starting update on %s users..." % str(len(following)))
+            logger.info("Starting update on %s users..." % str(len(following)))
 
             users = User.objects.all()
             for user in users:
@@ -44,11 +50,13 @@ class Command(BaseCommand):
                         user.monitored = False
                         user.save()
                         print("Marked %s as unmonitored!" % str(user.user_id))
+                        logger.info("Marked %s as unmonitored!" % str(user.user_id))
                 else:
                     if not user.monitored:
                         user.monitored = True
                         user.save()
                         print("Marked %s as monitored!" % str(user.user_id))
+                        logger.info("Marked %s as monitored!" % str(user.user_id))
             completed = 0
             new_accounts = [
                 id for id in following if id not in [user.user_id for user in users]
@@ -68,10 +76,17 @@ class Command(BaseCommand):
                         user_data = api.get_user(user_id=id)
                     except tweepy.TweepyException as e:
                         self.stderr.write(str(e))
+                        logger.error(
+                            str(e)
+                        )
                         continue  # important to continue, and to _not_ mark all tweets as deleted
                     try:
                         user = User.objects.get(user_id=id)
                         self.stdout.write(
+                            "User @%s already exists; updating record..."
+                            % user_data.screen_name
+                        )
+                        logger.info(
                             "User @%s already exists; updating record..."
                             % user_data.screen_name
                         )
@@ -88,6 +103,10 @@ class Command(BaseCommand):
                             "User @%s does not exist; creating record..."
                             % user_data.screen_name
                         )
+                        logger.info(
+                            "User @%s does not exist; creating record..."
+                            % user_data.screen_name
+                        )
                         user = User(user_id=id, full_data=user_data._json)
                         user.save()
                         upsertTweets(getAllStatuses(api, user), user)
@@ -96,8 +115,18 @@ class Command(BaseCommand):
                             "Also checking @%s for deleted tweets..."
                             % user_data.screen_name
                         )
+                        logger.info(
+                            "Also checking @%s for deleted tweets..."
+                            % user_data.screen_name
+                        )
                         deleted_count = scanForDeletedTweet(api, user)
                         self.stdout.write(
+                            self.style.SUCCESS(
+                                "Found %s new deleted tweets for @%s"
+                                % (str(deleted_count), user_data.screen_name)
+                            )
+                        )
+                        logger.info(
                             self.style.SUCCESS(
                                 "Found %s new deleted tweets for @%s"
                                 % (str(deleted_count), user_data.screen_name)
@@ -117,7 +146,18 @@ class Command(BaseCommand):
                         % (user_data.screen_name, str(completed), str(len(following)))
                     )
                 )
+                logger.info(
+                    self.style.SUCCESS(
+                        "Successfully updated @%s (%s/%s)."
+                        % (user_data.screen_name, str(completed), str(len(following)))
+                    )
+                )
             self.stdout.write(
+                self.style.SUCCESS(
+                    "Finished refreshing %s accounts." % str(len(following))
+                )
+            )
+            logger.info(
                 self.style.SUCCESS(
                     "Finished refreshing %s accounts." % str(len(following))
                 )
@@ -189,6 +229,10 @@ def scanForDeletedTweet(api, user):
                     tweet.deleted = True
                     tweet.save()
                     print(
+                        "Found deleted tweet: %s by @%s"
+                        % (str(tweet.tweet_id), user.full_data["screen_name"])
+                    )
+                    logger.info(
                         "Found deleted tweet: %s by @%s"
                         % (str(tweet.tweet_id), user.full_data["screen_name"])
                     )

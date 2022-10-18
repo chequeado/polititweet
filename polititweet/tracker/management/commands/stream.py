@@ -5,8 +5,10 @@ from ...models import Tweet, User
 from django.conf import settings
 from django.utils import timezone
 import sys
+import logging
 
 following = []
+logger = logging.getLogger('django')
 
 
 class Command(BaseCommand):
@@ -15,10 +17,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         global following
         self.stdout.write("Loading accounts to track...")
+        logger.info("Loading accounts to track...")
         users = User.objects.all()
         self.stdout.write("Loaded %s accounts to track." % str(len(users)))
+        logger.info("Loaded %s accounts to track." % str(len(users)))
 
         self.stdout.write("Connecting to Twitter...")
+        logger.info("Connecting to Twitter...")
+        
         auth = tweepy.OAuthHandler(
             settings.TWITTER_CREDENTIALS["consumer_key"],
             settings.TWITTER_CREDENTIALS["consumer_secret"],
@@ -31,8 +37,10 @@ class Command(BaseCommand):
         following = api.get_friend_ids()
         following.append(945391013828313088)
         self.stdout.write("Connected to Twitter.")
+        logger.info("Connected to Twitter.")
 
         self.stdout.write(self.style.SUCCESS("Launching stream...!"))
+        logger.info(self.style.SUCCESS("Launching stream...!"))
         stream = ArchiveStreamListener(
             consumer_key=settings.TWITTER_CREDENTIALS["consumer_key"],
             consumer_secret=settings.TWITTER_CREDENTIALS["consumer_secret"],
@@ -41,6 +49,7 @@ class Command(BaseCommand):
         )
         stream.filter(follow=[str(id) for id in following])
         self.stdout.write("Exited!")
+        logger.info("Exited!")
 
 
 class ArchiveStreamListener(tweepy.Stream):
@@ -70,8 +79,13 @@ class ArchiveStreamListener(tweepy.Stream):
                 "Archived tweet from from @%s (%s)."
                 % (status.user.screen_name, status.user.id)
             )
+            logger.info(
+                "Archived tweet from from @%s (%s)."
+                % (status.user.screen_name, status.user.id)
+            )
         except Exception as e:
             print("Error on %s: %s" % (str(status.id), str(e)))
+            logger.error("Error on %s: %s" % (str(status.id), str(e)))
             sys.exit(1)
 
     def on_delete(self, status_id, user_id):
@@ -81,5 +95,7 @@ class ArchiveStreamListener(tweepy.Stream):
             tweet.deleted_time = timezone.now()
             tweet.save()
             print("Got deleted tweet from #%s." % (user_id))
+            logger.info("Got deleted tweet from #%s." % (user_id))
         except Exception as e:
             print("Error on %s: %s" % (str(status_id), str(e)))
+            logger.error("Error on %s: %s" % (str(status_id), str(e)))
