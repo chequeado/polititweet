@@ -34,7 +34,7 @@ services:
   nginx:
     image: nginx:1.13
     ports:
-      - 80:80
+      - 81:80
     volumes:
       - ./config/nginx/conf.d:/etc/nginx/conf.d
       - static_vol:/usr/src/polititweet/static
