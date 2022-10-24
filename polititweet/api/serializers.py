@@ -28,7 +28,7 @@ class DeletedTweetSerializer(serializers.ModelSerializer):
             retweeted_status = obj.full_data['retweeted_status']
             retweeted_user_name = retweeted_status['user']['screen_name']
             retweeted_tweet_id = retweeted_status['id_str']
-            return f'https://twitter.com/{retweeted_user_name}/{retweeted_tweet_id}'
+            return f'https://twitter.com/{retweeted_user_name}/status/{retweeted_tweet_id}'
         else:
             return None
 
