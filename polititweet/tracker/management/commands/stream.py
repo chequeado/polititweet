@@ -34,7 +34,8 @@ class Command(BaseCommand):
             settings.TWITTER_CREDENTIALS["access_secret"],
         )
         api = tweepy.API(auth)
-        following = api.get_friend_ids()
+        following = [member.id for member in tweepy.Cursor(api.get_list_members, list_id=int(settings.TWITTER_LIST_ID)).items()]
+        #following = api.get_friend_ids()
         following.append(945391013828313088)
         self.stdout.write("Connected to Twitter.")
         logger.info("Connected to Twitter.")
