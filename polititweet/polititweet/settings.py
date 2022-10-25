@@ -41,6 +41,8 @@ ALERT_TWITTER_CREDENTIALS = {
     "access_secret": os.environ.get("ALERT_ACCESS_SECRET"),
 }
 
+TWITTER_LIST_ID = os.environ.get("TWITTER_LIST_ID")
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
@@ -59,9 +61,11 @@ INSTALLED_APPS = [
     "debug_toolbar",
     "rest_framework",
     "api",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -71,6 +75,16 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost",
+    "https://polititweet.chequeabot.com",
+    "https://chequeado.com",
+]
+
+CORS_ALLOW_METHODS = [
+    "GET",
 ]
 
 ROOT_URLCONF = "polititweet.urls"

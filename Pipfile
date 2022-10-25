@@ -16,6 +16,7 @@ djangorestframework = "==3.14.0"
 psycopg2-binary = ">=2.9"
 unicodecsv = "*"
 humanize = "3.11.0"
+django-cors-headers = "3.13.0"
 
 [requires]
 python_version = "3.8"
