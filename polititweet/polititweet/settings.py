@@ -78,8 +78,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost",
-    "https://polititweet.chequeabot.com",
+    "http://localhost:3000",
     "https://chequeado.com",
 ]
 
