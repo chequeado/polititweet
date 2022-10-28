@@ -9,9 +9,11 @@ from tracker.models import (
     User,
 )
 from api import serializers
+from api.pagination import StandardPagination
 
 
 class DeletedTweetsViewSet(viewsets.ReadOnlyModelViewSet):
     '''Viewset listing deleted tweets.'''
     serializer_class = serializers.DeletedTweetSerializer
     queryset = Tweet.objects.filter(deleted=True).order_by('-deleted_time')
+    pagination_class = StandardPagination
