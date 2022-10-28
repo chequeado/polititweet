@@ -42,3 +42,18 @@ class DeletedTweetSerializer(serializers.ModelSerializer):
             'user_name': obj.user.full_data['screen_name'],
             'verified': obj.user.full_data['verified'],
         }
+
+
+class UserSerializer(serializers.ModelSerializer):
+    '''Serializer for targeted users.'''
+    screen_name = serializers.SerializerMethodField()
+    user_name = serializers.SerializerMethodField()
+    class Meta:
+        model = User
+        fields = '__all__'
+
+    def get_screen_name(self, obj):
+        return obj.full_data['name']
+
+    def get_user_name(self, obj):
+        return obj.full_data['screen_name']
