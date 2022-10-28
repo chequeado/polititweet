@@ -48,12 +48,24 @@ class UserSerializer(serializers.ModelSerializer):
     '''Serializer for targeted users.'''
     screen_name = serializers.SerializerMethodField()
     user_name = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
+    bio = serializers.SerializerMethodField()
+    verified = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ('added_date', 'deleted_count', 'user_name', 'screen_name', 'avatar', 'bio', 'verified')
 
     def get_screen_name(self, obj):
         return obj.full_data['name']
 
     def get_user_name(self, obj):
         return obj.full_data['screen_name']
+
+    def get_avatar(self, obj):
+        return obj.full_data['profile_image_url_https']
+
+    def get_bio(self, obj):
+        return obj.full_data['description']
+
+    def get_verified(self, obj):
+        return obj.full_data['verified']

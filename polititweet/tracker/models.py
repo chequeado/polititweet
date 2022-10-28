@@ -24,6 +24,14 @@ class User(models.Model):
     def latest_tweet(self):
         return Tweet.objects.filter(user=self).order_by("-tweet_id").first()
 
+    @property
+    def screen_name(self):
+        return self.full_data['name']
+
+    @property
+    def user_name(self):
+        return self.full_data['screen_name']
+
 
 class Tweet(models.Model):
     tweet_id = models.BigIntegerField(primary_key=True, db_index=True)
