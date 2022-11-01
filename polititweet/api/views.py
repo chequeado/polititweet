@@ -24,6 +24,8 @@ class UsersView(ListAPIView):
             serializer = self.get_serializer(politician)
 
             try:
+                if first_letter == 'Á':
+                    first_letter = 'A'
                 results[first_letter].append(serializer.data)
             except:
                 results[first_letter] = []
