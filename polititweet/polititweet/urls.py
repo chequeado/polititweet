@@ -18,8 +18,8 @@ from django.urls import path, include
 from django.conf import settings
 
 urlpatterns = [
-    path("", include("tracker.urls")), # Home original Polititweet
     path("api/", include("api.urls")),
+    path("", include("tracker.urls")), # Home original Polititweet
 ]
 
 if settings.DEBUG:
