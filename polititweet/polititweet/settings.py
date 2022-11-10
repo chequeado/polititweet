@@ -43,6 +43,10 @@ ALERT_TWITTER_CREDENTIALS = {
 
 TWITTER_LIST_ID = os.environ.get("TWITTER_LIST_ID")
 
+AIRTABLE_TOKEN = os.environ.get('AIRTABLE_TOKEN')
+AIRTABLE_BASE_ID = os.environ.get('AIRTABLE_BASE_ID')
+AIRTABLE_TABLE_ID = os.environ.get('AIRTABLE_TABLE_ID')
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 

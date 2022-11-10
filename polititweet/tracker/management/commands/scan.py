@@ -1,5 +1,9 @@
 import tweepy
 import random
+import requests
+import os
+import time
+import json
 
 from django.core.management.base import BaseCommand, CommandError
 from ...models import Tweet, User
@@ -36,7 +40,9 @@ class Command(BaseCommand):
                 auth,
                 wait_on_rate_limit=True
             )
-            following = [member.id for member in tweepy.Cursor(api.get_list_members, list_id=int(settings.TWITTER_LIST_ID)).items()]
+
+            following = get_politicians_twids_list(api)
+            #following = [member.id for member in tweepy.Cursor(api.get_list_members, list_id=int(settings.TWITTER_LIST_ID)).items()]
             #following = api.get_friend_ids()
             self.stdout.write("Connected to Twitter.")
             logger.info("Connected to Twitter.")
@@ -50,13 +56,11 @@ class Command(BaseCommand):
                     if user.monitored:
                         user.monitored = False
                         user.save()
-                        print("Marked %s as unmonitored!" % str(user.user_id))
                         logger.info("Marked %s as unmonitored!" % str(user.user_id))
                 else:
                     if not user.monitored:
                         user.monitored = True
                         user.save()
-                        print("Marked %s as monitored!" % str(user.user_id))
                         logger.info("Marked %s as monitored!" % str(user.user_id))
             completed = 0
             new_accounts = [
@@ -169,6 +173,87 @@ class Command(BaseCommand):
             scan()
 
 
+def get_politicians_twids_list(api):
+    """
+    Function que obtiene la lista de ids de las cuentas cuentas de politicos a observar
+    """
+    AIRTABLE_TOKEN=settings.AIRTABLE_TOKEN
+    AIRTABLE_BASE_ID=settings.AIRTABLE_BASE_ID
+    AIRTABLE_TABLE_ID=settings.AIRTABLE_TABLE_ID
+    url=f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_ID}"
+    headers = {
+        'Authorization': f'Bearer {AIRTABLE_TOKEN}',
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.get(url, headers=headers)
+    errors_count = 0
+    cantidad_total = 0
+
+    records_to_update = []
+    politicians_twids = []
+    # Mientras la respuesta sea exitosa...
+    while response.status_code == 200:
+        politicians_records = response.json()['records']
+        cantidad_total += len(politicians_records)
+
+        # Reviso todos por si falta user_id
+        for record in politicians_records:
+            if 'user_name' in record['fields']: # Si no es un record vacio
+
+                if not 'user_id' in record['fields']:
+                    try:
+                        # Busco user id en Tweepy
+                        user = api.get_user(screen_name=record['fields']['user_name'][1:]) # [1:] para quitar @
+                        records_to_update.append(
+                            {
+                                "id": record['id'],
+                                "fields": {
+                                    "user_id": user.id_str
+                                }
+                            }
+                        )
+                    except Exception as e:
+                        logger.error(str(e))
+                        errors_count += 1
+                else:
+                    politicians_twids.append(record['fields']['user_id'])
+
+                # Max de records a actualizar en un request de airtable es 10
+                # Corto (y actualizo en airtable) si llegue a esa cantidad o si llegue al ultimo de la ultima page con actualizaciones pendientes
+                if ((len(records_to_update) == 10) or
+                    (len(records_to_update) > 0 and record == politicians_records[-1] and 'offset' not in response.json())):
+                    data = {
+                        'records': records_to_update
+                    }
+
+                    airtable_response = requests.patch(url, headers=headers, data=json.dumps(data))
+
+                    if airtable_response.status_code == 200:
+                        new_ids = [record['fields']['user_id'] for record in airtable_response.json()['records']]
+                        politicians_twids += new_ids
+                        records_to_update = []
+                    else:
+                        logger.error(airtable_response.text) 
+
+        # Que exista una key de offset significa que aun quedan paginas (de 100 elementos c/u) por traer.
+        # La ultima pagina no tiene key de offset. Si es la ultima pag, corto el while y no busco mas
+        if 'offset' not in response.json(): break
+
+        # Establezco el nuevo offset como parametro
+        params = {
+            'offset': response.json()['offset']
+        }
+        time.sleep(0.5) # Pausa de medio segundo entre consultas para no sobrecargar la api de Airtable
+        response = requests.get(url, headers=headers, params=params)
+
+    logger.info(f'Cantidad total records airtable: {cantidad_total}')
+    logger.info(f'Ids obtenidos: {len(politicians_twids)}')
+    logger.info(f'Errores: {errors_count}')
+
+    return politicians_twids
+
+
 def hasAccountDeletedTweet(api, user_db, user_data):
     if user_db.flagged:
         return True
@@ -229,10 +314,6 @@ def scanForDeletedTweet(api, user):
                 if e.api_code == 144:
                     tweet.deleted = True
                     tweet.save()
-                    print(
-                        "Found deleted tweet: %s by @%s"
-                        % (str(tweet.tweet_id), user.full_data["screen_name"])
-                    )
                     logger.info(
                         "Found deleted tweet: %s by @%s"
                         % (str(tweet.tweet_id), user.full_data["screen_name"])

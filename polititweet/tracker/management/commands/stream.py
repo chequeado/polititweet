@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand
 from ...models import Tweet, User
 from django.conf import settings
 from django.utils import timezone
+from tracker.management.commands.scan import get_politicians_twids_list
 import sys
 import logging
 
@@ -34,7 +35,9 @@ class Command(BaseCommand):
             settings.TWITTER_CREDENTIALS["access_secret"],
         )
         api = tweepy.API(auth)
-        following = [member.id for member in tweepy.Cursor(api.get_list_members, list_id=int(settings.TWITTER_LIST_ID)).items()]
+
+        following = get_politicians_twids_list(api)
+        #following = [member.id for member in tweepy.Cursor(api.get_list_members, list_id=int(settings.TWITTER_LIST_ID)).items()]
         #following = api.get_friend_ids()
         following.append(945391013828313088)
         self.stdout.write("Connected to Twitter.")
@@ -76,16 +79,11 @@ class ArchiveStreamListener(tweepy.Stream):
             # Update user metadata
             tweet.update_user_metadata()
 
-            print(
-                "Archived tweet from from @%s (%s)."
-                % (status.user.screen_name, status.user.id)
-            )
             logger.info(
                 "Archived tweet from from @%s (%s)."
                 % (status.user.screen_name, status.user.id)
             )
         except Exception as e:
-            print("Error on %s: %s" % (str(status.id), str(e)))
             logger.error("Error on %s: %s" % (str(status.id), str(e)))
             sys.exit(1)
 
@@ -95,8 +93,6 @@ class ArchiveStreamListener(tweepy.Stream):
             tweet.deleted = True
             tweet.deleted_time = timezone.now()
             tweet.save()
-            print("Got deleted tweet from #%s." % (user_id))
             logger.info("Got deleted tweet from #%s." % (user_id))
         except Exception as e:
-            print("Error on %s: %s" % (str(status_id), str(e)))
             logger.error("Error on %s: %s" % (str(status_id), str(e)))
