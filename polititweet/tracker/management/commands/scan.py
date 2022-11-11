@@ -77,7 +77,7 @@ class Command(BaseCommand):
                 + [id for id in following if id not in flagged_accounts + new_accounts]
             ):
                 iteration_count += 1
-                if iteration_count % 250: # Cada 250 cuentas, hago una pausa de 5 minutos (por la api de tw)
+                if iteration_count % 250 == 0: # Cada 250 cuentas, hago una pausa de 5 minutos (por la api de tw)
                     time.sleep(300)
 
                 try:
