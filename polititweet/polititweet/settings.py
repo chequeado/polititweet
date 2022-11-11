@@ -41,7 +41,7 @@ ALERT_TWITTER_CREDENTIALS = {
     "access_secret": os.environ.get("ALERT_ACCESS_SECRET"),
 }
 
-TWITTER_LIST_ID = os.environ.get("TWITTER_LIST_ID")
+#TWITTER_LIST_ID = os.environ.get("TWITTER_LIST_ID")
 
 AIRTABLE_TOKEN = os.environ.get('AIRTABLE_TOKEN')
 AIRTABLE_BASE_ID = os.environ.get('AIRTABLE_BASE_ID')

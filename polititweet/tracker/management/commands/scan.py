@@ -70,11 +70,16 @@ class Command(BaseCommand):
                 user.user_id for user in User.objects.filter(flagged=True)
             ]
             random.shuffle(following)  # shuffle order to get even coverage
+            iteration_count = 0
             for id in (
                 new_accounts
                 + flagged_accounts
                 + [id for id in following if id not in flagged_accounts + new_accounts]
             ):
+                iteration_count += 1
+                if iteration_count % 250: # Cada 250 cuentas, hago una pausa de 5 minutos (por la api de tw)
+                    time.sleep(300)
+
                 try:
                     user_data = None
                     try:
