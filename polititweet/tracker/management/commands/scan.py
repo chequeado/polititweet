@@ -222,7 +222,7 @@ def get_politicians_twids_list(api):
                         logger.error(str(e))
                         errors_count += 1
                 else:
-                    politicians_twids.append(record['fields']['user_id'])
+                    politicians_twids.append(int(record['fields']['user_id']))
 
                 # Max de records a actualizar en un request de airtable es 10
                 # Corto (y actualizo en airtable) si llegue a esa cantidad o si llegue al ultimo de la ultima page con actualizaciones pendientes
@@ -235,7 +235,7 @@ def get_politicians_twids_list(api):
                     airtable_response = requests.patch(url, headers=headers, data=json.dumps(data))
 
                     if airtable_response.status_code == 200:
-                        new_ids = [record['fields']['user_id'] for record in airtable_response.json()['records']]
+                        new_ids = [int(record['fields']['user_id']) for record in airtable_response.json()['records']]
                         politicians_twids += new_ids
                         records_to_update = []
                     else:
