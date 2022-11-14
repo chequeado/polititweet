@@ -20,8 +20,12 @@ class UsersView(ListAPIView):
 
         results = {}
         for politician in queryset:
-            first_letter = politician.screen_name[0].upper()
             serializer = self.get_serializer(politician)
+            first_letter = ''
+            try:
+                first_letter = serializer.data['screen_name'][0].upper()
+            except:
+                print('screen_name problematico:', serializer.data['screen_name'])
 
             try:
                 if first_letter == 'Á':
