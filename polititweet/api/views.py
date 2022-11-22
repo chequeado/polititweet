@@ -30,12 +30,16 @@ class UsersView(ListAPIView):
 
             # Si esta vacio el screen_name o si no es una letra (osea un caracter raro como @  . y otros)
             if not re.search('[a-zA-Z]', first_letter) or not serializer.data['screen_name']:
-                first_letter = serializer.data['user_name'][0].upper()
+                # Busco la primer letra del user_name, evitando caracteres especiales
+                first_letter = re.findall('[a-zA-Z]', serializer.data['user_name'])[0].upper()
 
             try:
                 results[first_letter].append(serializer.data)
             except:
                 results[first_letter] = []
                 results[first_letter].append(serializer.data)
+
+        # Ordeno alfabeticamente
+        results = {k: results[k] for k in sorted(results)}
 
         return Response(results)
