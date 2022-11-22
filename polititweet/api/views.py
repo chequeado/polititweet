@@ -1,3 +1,5 @@
+import re
+
 from rest_framework.generics import ListAPIView
 from rest_framework import filters
 from rest_framework.response import Response
@@ -22,14 +24,15 @@ class UsersView(ListAPIView):
         for politician in queryset:
             serializer = self.get_serializer(politician)
             first_letter = ''
-            try:
+
+            if serializer.data['screen_name']:
                 first_letter = serializer.data['screen_name'][0].upper()
-            except:
-                print('screen_name problematico:', serializer.data['screen_name'])
+
+            # Si esta vacio el screen_name o si no es una letra (osea un caracter raro como @  . y otros)
+            if not re.search('[a-zA-Z]', first_letter) or not serializer.data['screen_name']:
+                first_letter = serializer.data['user_name'][0].upper()
 
             try:
-                if first_letter == 'Á':
-                    first_letter = 'A'
                 results[first_letter].append(serializer.data)
             except:
                 results[first_letter] = []
