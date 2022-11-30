@@ -4,7 +4,7 @@ services:
   app:
     build: .
     image: polititweet
-    #restart: always elegir bien para produccion
+    restart: always
     volumes:
       - ./polititweet:/usr/src/polititweet
       - static_vol:/usr/src/polititweet/static
@@ -16,6 +16,7 @@ services:
       - db
   stream:
     image: polititweet
+    restart: always
     volumes:
       - ./polititweet:/usr/src/polititweet
     command: >
@@ -24,15 +25,26 @@ services:
       - ./polititweet/polititweet/.env
     depends_on:
       - db
+  scan:
+    image: polititweet
+    volumes:
+      - ./polititweet:/usr/src/polititweet
+    command: > # se ejecutara cada 1 hora desde cron
+      sh -c "python manage.py scan"
+    env_file:
+      - ./polititweet/polititweet/.env
+    depends_on:
+      - db
   db:
     image: postgres:13-alpine
-    #restart: always
+    restart: always
     volumes:
       - db_vol:/var/lib/postgresql/data
     env_file:
       - ./polititweet/polititweet/.env
   nginx:
     image: nginx:1.13
+    restart: always
     ports:
       - 81:80
     volumes:
