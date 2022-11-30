@@ -8,6 +8,11 @@ from tracker.management.commands.scan import get_politicians_twids_list
 import sys
 import logging
 
+import pytz
+from datetime import datetime
+
+local_timezone = pytz.timezone('America/Argentina/Buenos_Aires')
+
 following = []
 logger = logging.getLogger('django')
 
@@ -93,6 +98,6 @@ class ArchiveStreamListener(tweepy.Stream):
             tweet.deleted = True
             tweet.deleted_time = timezone.now()
             tweet.save()
-            logger.info("Got deleted tweet from #%s." % (user_id))
+            logger.info(f"{datetime.now(local_timezone)} - Got deleted tweet from #%s." % (user_id))
         except Exception as e:
             logger.error("Error on %s: %s" % (str(status_id), str(e)))

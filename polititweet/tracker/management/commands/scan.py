@@ -10,6 +10,11 @@ from ...models import Tweet, User
 from django.conf import settings
 import logging
 
+import pytz
+from datetime import datetime
+
+local_timezone = pytz.timezone('America/Argentina/Buenos_Aires')
+
 
 logger = logging.getLogger('django')
 
@@ -27,7 +32,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         def scan():
             self.stdout.write("Connecting to Twitter...")
-            logger.info("Connecting to Twitter...")
+            logger.info(f"{datetime.now(local_timezone)} - Connecting to Twitter...")
             auth = tweepy.OAuthHandler(
                 settings.TWITTER_CREDENTIALS["consumer_key"],
                 settings.TWITTER_CREDENTIALS["consumer_secret"],
@@ -78,6 +83,9 @@ class Command(BaseCommand):
             ):
                 iteration_count += 1
                 if iteration_count % 250 == 0: # Cada 250 cuentas, hago una pausa de 5 minutos (por la api de tw)
+                    logger.info(
+                            "********** Waiting 5 minutes to avoid Twitter API overloading... **********"
+                        )
                     time.sleep(300)
 
                 try:
