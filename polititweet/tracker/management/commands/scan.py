@@ -32,6 +32,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         def scan():
             self.stdout.write(f"{datetime.now(local_timezone)} - Connecting to Twitter...")
+            logger.info(f"{datetime.now(local_timezone)} - Connecting to Twitter...")
             auth = tweepy.OAuthHandler(
                 settings.TWITTER_CREDENTIALS["consumer_key"],
                 settings.TWITTER_CREDENTIALS["consumer_secret"],
@@ -49,10 +50,10 @@ class Command(BaseCommand):
             #following = [member.id for member in tweepy.Cursor(api.get_list_members, list_id=int(settings.TWITTER_LIST_ID)).items()]
             #following = api.get_friend_ids()
             self.stdout.write("Connected to Twitter.")
-            logger.info("Connected to Twitter.")
+            logger.info(f"{datetime.now(local_timezone)} - Connected to Twitter.")
 
             self.stdout.write("Starting update on %s users..." % str(len(following)))
-            logger.info("Starting update on %s users..." % str(len(following)))
+            logger.info(f"{datetime.now(local_timezone)} - Starting update on %s users..." % str(len(following)))
 
             users = User.objects.all()
             for user in users:
