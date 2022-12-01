@@ -31,8 +31,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         def scan():
-            self.stdout.write("Connecting to Twitter...")
-            logger.info(f"{datetime.now(local_timezone)} - Connecting to Twitter...")
+            self.stdout.write(f"{datetime.now(local_timezone)} - Connecting to Twitter...")
             auth = tweepy.OAuthHandler(
                 settings.TWITTER_CREDENTIALS["consumer_key"],
                 settings.TWITTER_CREDENTIALS["consumer_secret"],

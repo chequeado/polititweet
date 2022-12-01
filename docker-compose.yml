@@ -27,7 +27,6 @@ services:
       - db
   scan:
     image: polititweet
-    restart: always
     volumes:
       - ./polititweet:/usr/src/polititweet
     command: > # se ejecutara cada 1 hora desde cron
