@@ -1,0 +1,44 @@
+version: "3.2"
+
+services:
+  app:
+    build: .
+    image: polititweet
+    volumes:
+      - ./polititweet:/usr/src/polititweet
+      - static_vol:/usr/src/polititweet/static
+    command: >
+      sh -c "./launch.sh"
+    env_file:
+      - ./polititweet/polititweet/.env
+    depends_on:
+      - db
+  stream:
+    image: polititweet
+    volumes:
+      - ./polititweet:/usr/src/polititweet
+    command: >
+      sh -c "python manage.py stream"
+    env_file:
+      - ./polititweet/polititweet/.env
+    depends_on:
+      - db
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - db_vol:/var/lib/postgresql/data
+    env_file:
+      - ./polititweet/polititweet/.env
+  nginx:
+    image: nginx:1.13
+    ports:
+      - 81:80
+    volumes:
+      - ./config/nginx/conf.d:/etc/nginx/conf.d
+      - static_vol:/usr/src/polititweet/static
+    depends_on:
+      - app
+
+volumes:
+  db_vol:
+  static_vol:
